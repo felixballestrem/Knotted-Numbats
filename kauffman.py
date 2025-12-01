@@ -16,35 +16,28 @@ def kauffman(crossings):
     else:
         F = crossings.index(sucCross(crossings,b))
         H = crossings.index(preCross(crossings,d))
+            #skein moves
+    testA = aSmoothing(crossings,a,b,c,d,E,F,G,H)
+    testB = bSmoothing(crossings,a,b,c,d,E,F,G,H)
     if len(crossings) == 0 or a == b and b == c and c == d:
         #trivial case
         return 1    
-    elif E == 0 and F == 0 or : # if the western or eastern arcs are loops
-        
-        return simplify(kauffman(bSmoothingWest(crossings)) * (-A**2 - A**-2))
-    elif G==0 and H ==0: # TBC
-        return simplify(kauffman(bSmoothingEast(crossings)) * (-A**2 - A**-2))
-    elif E == 0 and H == 0 : 
-        return simplify(kauffman(bSmoothingNorth(crossings)) * (-A**2 - A**-2))
-    elif G==0 and F ==0  # if the western or eastern arcs are loops
-        return simplify(kauffman(bSmoothingSouth(crossings)) * (-A**2 - A**-2))
+    elif G==0 and H ==0 or E == 0 and F == 0: # if the western or eastern arcs are loops        
+        return simplify(kauffman(bSmoothing(crossings,a,b,c,d,E,F,G,H)) * (-A**1 - A**-3) + A* kauffman(testA) )
+    elif G==0 and F ==0 or E == 0 and H == 0 : # if the northern or southern arcs are loops    
+        return simplify(kauffman(aSmoothing(crossings,a,b,c,d,E,F,G,H)) * (-A**3 - A**-1) + (A**-1)* kauffman(testB))
     else:
-        #skein moves
-        testA = aSmoothing(crossings,a,b,c,d,E,F,G,H)
-        testB = bSmoothing(crossings,a,b,c,d,E,F,G,H)
-        :
-        #remove crossing but have to redo conditiom to find unknots next to knots
-        
-
         return simplify(A* kauffman(testA) + (A**-1)* kauffman(testB))
     
 def aSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
     #connecting a (se) to d (sw) and b (ne) to c (nw)
     crossings = [crossing[:] for crossing in originalcrossings]
-    g = crossings[G]
-    h = crossings[H]
-    g[g.index(c)] = b
-    h[h.index(d)] = a
+    if G != 0 or F != 0: 
+        g = crossings[G]
+        g[g.index(c)] = b
+    if E!=0 or H !=0: 
+        h = crossings[H]
+        h[h.index(d)] = a
     del crossings[0]
     #relabeling
     arcs = []
@@ -55,14 +48,17 @@ def aSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
     arcs.sort()
     mapping = {old:new+1 for new,old in enumerate(arcs)}
     crossings = [[mapping[x] for x in crossing] for crossing in crossings]
-    return crossings    
+    return crossings
+
 def bSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
     #connecting a (se) to b (ne) and d (sw) to c (nw)
     crossings = [crossing[:] for crossing in originalcrossings]
-    f = crossings[F]
-    h = crossings[H]
-    f[f.index(b)] = a
-    h[h.index(d)] = c
+    if E != 0 or F != 0: 
+        f = crossings[F]
+        f[f.index(b)] = a
+    if G !=0 or  H !=0: 
+        h = crossings[H]
+        h[h.index(d)] = c
     del crossings[0]
     #relabeling
     arcs = []
@@ -73,7 +69,8 @@ def bSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
     arcs.sort()
     mapping = {old:new+1 for new,old in enumerate(arcs)}
     crossings = [[mapping[x] for x in crossing] for crossing in crossings]
-    return crossings    
+    return crossings
+
 def crossingSign(cross):
     #assuming a is se, b is ne, c is nw and d is sw.
     a,b,c,d = cross
