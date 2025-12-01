@@ -19,11 +19,15 @@ def kauffman(crossings):
     if len(crossings) == 0 or a == b and b == c and c == d:
         #trivial case
         return 1    
-    elif E == 0 and F == 0 or G==0 and H ==0: # if the western or eastern arcs are loops
+    elif E == 0 and F == 0 or : # if the western or eastern arcs are loops
         
-        return simplify(kauffman(crossings[1:]) * (-A**2 - A**-2))
-    elif E == 0 and H == 0 or G==0 and F ==0  # if the western or eastern arcs are loops
-        return
+        return simplify(kauffman(bSmoothingWest(crossings)) * (-A**2 - A**-2))
+    elif G==0 and H ==0: # TBC
+        return simplify(kauffman(bSmoothingEast(crossings)) * (-A**2 - A**-2))
+    elif E == 0 and H == 0 : 
+        return simplify(kauffman(bSmoothingNorth(crossings)) * (-A**2 - A**-2))
+    elif G==0 and F ==0  # if the western or eastern arcs are loops
+        return simplify(kauffman(bSmoothingSouth(crossings)) * (-A**2 - A**-2))
     else:
         #skein moves
         testA = aSmoothing(crossings,a,b,c,d,E,F,G,H)
@@ -36,7 +40,6 @@ def kauffman(crossings):
     
 def aSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
     #connecting a (se) to d (sw) and b (ne) to c (nw)
-    #discuss if this works
     crossings = [crossing[:] for crossing in originalcrossings]
     g = crossings[G]
     h = crossings[H]
