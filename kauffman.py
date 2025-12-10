@@ -1,10 +1,11 @@
 from sympy import symbols,simplify
 
-A= symbols('A')
+A,T = symbols('A T')
 def kauffman(crossings):
     if len(crossings) == 0:
         #trivial case
         return 1
+    print(crossings)
     #working cross by cross
     cross = crossings[0]
     #initiallising each element of cross
@@ -16,29 +17,32 @@ def kauffman(crossings):
     if E==0 and F == 0 and G == 0 and H== 0:
         # if both arcs are loops
         if crossingSign(cross,crossings) == 1: # if the western and eastern arcs are loops        
-            return -A **-3
+            return -A **3
         else: 
-            return -A**3     # if the northern and southern arcs are loops        
-    elif (G==0 and H ==0) or (E == 0 and F == 0): # if the western or eastern arcs are loops        
+            return -A**-3     # if the northern and southern arcs are loops        
+    elif  (G==0 and F ==0) or (E == 0 and H == 0): # if the northern or southern arcs are loops           
         return simplify(kauffman(testB) * (-A**1 - A**-3) + A* kauffman(testA) )
-    elif (G==0 and F ==0) or (E == 0 and H == 0): # if the northern or southern arcs are loops    
+    elif (G==0 and H ==0) or (E == 0 and F == 0): # if the western or eastern arcs are loops 
         return simplify(kauffman(testA) * (-A**3 - A**-1) + (A**-1)* kauffman(testB))
     else:
         return simplify(A* kauffman(testA) + (A**-1)* kauffman(testB))
     
 def aSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
-    #connecting a (se) to d (sw) and b (ne) to c (nw)
+    #connecting a (se) to b (ne) and d (sw) to c (nw)
     crossings = [crossing[:] for crossing in originalcrossings]
-    if G != 0: 
-        g = crossings[G]
-        if crossingSign([a,b,c,d],crossings) ==-1:
-            g[g.index(c)] = b
-        else:
-            g[g.index(b)] = c
-        
-    if H !=0: 
+    if G == 0 and F == 0:
+        f = crossings[F]
+        f[f.index(b)] = c
+    elif E == 0 and H == 0:
         h = crossings[H]
         h[h.index(d)] = a
+    else:
+        if E!= 0 or F != 0: 
+            f = crossings[F]
+            f[f.index(b)] = a
+        if G != 0 or H !=0: 
+            h = crossings[H]
+            h[h.index(d)] = c
     del crossings[0]
     #relabeling
     arcs = sorted({x for crossing in crossings for x in crossing})
@@ -47,14 +51,23 @@ def aSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
     return crossings
 
 def bSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
-    #connecting a (se) to b (ne) and d (sw) to c (nw)
+    
+#connecting a (se) to d (sw) and b (ne) to c (nw)
     crossings = [crossing[:] for crossing in originalcrossings]
-    if F != 0: 
+    if G == 0 and H == 0:
         f = crossings[F]
         f[f.index(b)] = a
-    if H !=0: 
-        h = crossings[H]
-        h[h.index(d)] = c
+    elif E == 0 and F == 0:
+        g = crossings[F]
+        g[g.index(c)] = d
+    else:
+        if G != 0 or F!= 0: 
+            g = crossings[G]
+            g[g.index(c)] = b        
+        if H !=0 or E != 0: 
+            h = crossings[H]
+            h[h.index(d)] = a
+ 
     del crossings[0]
     #relabeling
     arcs = sorted({x for crossing in crossings for x in crossing})
@@ -94,7 +107,10 @@ def crossingSign(cross,crossings):
     a,b,c,d = cross
     linkList = links(crossings)
     bLink = [link for link in linkList if b in link][0]
-    if bLink.index(b) == 0:
+    
+    iLink = {i:[link for link in linkList if i in link][0] for i in cross}
+    if any([iLink[i].index(i) == len(iLink[i])-1 and iLink[cross[cross.index(i)-2]].index(cross[cross.index(i)-2]) == 0 for i in cross]):
+    #if bLink.index(b) == 0:
         if (b-d)*(c-a)>0:
             return -1
         else:
@@ -109,5 +125,6 @@ def writhe(crossings):
 def arcConnect(crossings,arc):
     return [cross for cross in crossings if arc in cross]
 def Jones(crossings):
-    print(kauffman(crossings),writhe(crossings))
-    return simplify((-A**3)**(writhe(crossings))* kauffman(crossings))
+    x = simplify((-A**-3)**(writhe(crossings))* kauffman(crossings))
+    print(x)
+    return simplify(x.subs(A**-4,T))
