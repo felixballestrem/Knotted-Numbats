@@ -16,10 +16,16 @@ def kauffman(crossings):
     testB = bSmoothing(crossings,a,b,c,d,E,F,G,H)
     if E==0 and F == 0 and G == 0 and H== 0:
         # if both arcs are loops
-        if crossingSign(cross,crossings) == 1: # if the western and eastern arcs are loops        
-            return -A **3
-        else: 
-            return -A**-3     # if the northern and southern arcs are loops        
+       if len(crossings)==1:
+            if crossingSign(cross,crossings) == 1: # if the western and eastern arcs are loops        
+                return -A **3 
+            else: 
+                return -A**-3    # if the northern and southern arcs are loops
+        else:
+            if crossingSign(cross,crossings) == 1:
+                return (A**5 + A)* kauffman(crossings[1:])
+            else:
+                return (A**-5 + A**-1)* kauffman(crossings[1:])  
     elif  (G==0 and F ==0) or (E == 0 and H == 0): # if the northern or southern arcs are loops           
         return simplify(kauffman(testB) * (-A**1 - A**-3) + A* kauffman(testA) )
     elif (G==0 and H ==0) or (E == 0 and F == 0): # if the western or eastern arcs are loops 
@@ -31,11 +37,11 @@ def aSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
     #connecting a (se) to b (ne) and d (sw) to c (nw)
     crossings = [crossing[:] for crossing in originalcrossings]
     if G == 0 and F == 0:
-        f = crossings[F]
-        f[f.index(b)] = c
-    elif E == 0 and H == 0:
         h = crossings[H]
         h[h.index(d)] = a
+    elif E == 0 and H == 0:
+        f = crossings[F]
+        f[f.index(b)] = c
     else:
         if E!= 0 or F != 0: 
             f = crossings[F]
@@ -58,7 +64,7 @@ def bSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
         f = crossings[F]
         f[f.index(b)] = a
     elif E == 0 and F == 0:
-        g = crossings[F]
+        g = crossings[G]
         g[g.index(c)] = d
     else:
         if G != 0 or F!= 0: 
