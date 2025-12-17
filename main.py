@@ -62,7 +62,6 @@ class Diagram:
             components.append(knot)
 
         return components
-        return components
     
     
         
