@@ -24,7 +24,7 @@ def get_components(crossings):
         # do depth-first-search on the arc to find its knot
         while stack:
             curr = stack.pop()
-            knot.append(curr)
+            knot.insert(0,curr)
             for nbr in nbrs[curr]:
                 if nbr not in visited:
                     visited.add(nbr)
