@@ -1,6 +1,6 @@
 def get_components2(crossings):
     """Determines the components of a PD
-       Returns a list of lists of arc labels """
+       Returns a list of lists of (adjacently ordered) arc labels """
     
     components = []
     # hash giving both neighbouring arc labels of an arc 
