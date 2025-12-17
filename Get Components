@@ -8,8 +8,9 @@ def get_components(crossings):
     for c in crossings:
         # get pairs of adjacent arc labels
         for p in ((c[0],c[2]),(c[1],c[3])):
-            nbrs.setdefault(p[0], set()).add(p[1])
-            nbrs.setdefault(p[1], set()).add(p[0])
+            nbrs.setdefault(p[0], []).append(p[1])
+        for p in ((c[0],c[2]),(c[1],c[3])):
+            nbrs.setdefault(p[1], []).append(p[0])
 
     visited = set()
     # iterate over all arcs
