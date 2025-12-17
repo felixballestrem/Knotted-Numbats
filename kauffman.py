@@ -2,7 +2,7 @@ from sympy import symbols,simplify
 
 A,T = symbols('A T')
 def kauffman(crossings):
-    if if len(crossings) == 0 or (len(crossings) == 1 and len(crossings[0]) == 0):
+    if len(crossings) == 0 or (len(crossings) == 1 and len(crossings[0]) == 0):
         #trivial case
         return 1
     print(crossings)
