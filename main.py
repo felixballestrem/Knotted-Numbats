@@ -36,11 +36,11 @@ class Diagram:
         # hash giving both neighbouring arc labels of an arc 
         nbrs = {}
         for c in self.pd:
-            # get pairs of adjacent arc labels
-            for p in ((c[0],c[2]),(c[1],c[3])):
-                nbrs.setdefault(p[0], []).append(p[1])
-            for p in ((c[0],c[2]),(c[1],c[3])):
-                nbrs.setdefault(p[1], []).append(p[0])
+            nbrs.setdefault(c[0], []).append(c[2])
+            nbrs.setdefault(c[2], []).append(c[0])
+        for c in self.pd:
+            nbrs.setdefault(c[1], []).append(c[3])
+            nbrs.setdefault(c[3], []).append(c[1])
 
         visited = set()
         # iterate over all arcs
@@ -61,6 +61,7 @@ class Diagram:
                         stack.append(nbr)
             components.append(knot)
 
+        return components
         return components
     
     
