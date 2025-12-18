@@ -1,11 +1,10 @@
 from sympy import symbols,simplify
-
-A,T = symbols('A T')
+A,t = symbols('A t',positive = True)
 def kauffman(crossings):
     if len(crossings) == 0 or (len(crossings) == 1 and len(crossings[0]) == 0):
         #trivial case
         return 1
-    print(crossings)
+    
     #working cross by cross
     cross = crossings[0]
     #initiallising each element of cross
@@ -16,13 +15,13 @@ def kauffman(crossings):
     testB = bSmoothing(crossings,a,b,c,d,E,F,G,H)
     if E==0 and F == 0 and G == 0 and H== 0:
         # if both arcs are loops
-       if len(crossings)==1:
-            if crossingSign(cross,crossings) == 1: # if the western and eastern arcs are loops        
+        if len(crossings)==1:
+            if sign(cross,crossings) == 1: # if the western and eastern arcs are loops        
                 return -A **3 
             else: 
                 return -A**-3    # if the northern and southern arcs are loops
         else:
-            if crossingSign(cross,crossings) == 1:
+            if sign(cross,crossings) == 1:
                 return (A**5 + A)* kauffman(crossings[1:])
             else:
                 return (A**-5 + A**-1)* kauffman(crossings[1:])  
@@ -56,8 +55,7 @@ def aSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
     crossings = [[mapping[x] for x in crossing] for crossing in crossings]
     return crossings
 
-def bSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
-    
+def bSmoothing(originalcrossings,a,b,c,d,E,F,G,H):  
 #connecting a (se) to d (sw) and b (ne) to c (nw)
     crossings = [crossing[:] for crossing in originalcrossings]
     if G == 0 and H == 0:
@@ -80,57 +78,109 @@ def bSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
     mapping = {old:new+1 for new,old in enumerate(arcs)}
     crossings = [[mapping[x] for x in crossing] for crossing in crossings]
     return crossings
-def links(crossings):
-    linkList = []
-    arcs = sorted({x for crossing in crossings for x in crossing})
-    visited = set()
-    for arc in arcs:
-        if arc in visited:
-            continue
-        i = arc
-        link = []
-        while i not in link: 
-            visited.add(i)
-            link.append(i)
-            for cross in crossings:
-                if i in cross:
-                    a,b,c,d = cross
-                    if i ==a:
-                        iTemp = c
-                    elif i ==b:
-                        iTemp = d
-                    elif i ==c:
-                        iTemp = a
-                    else:
-                        iTemp = b
-                    if iTemp not in link:
-                        i = iTemp
-                        break
-        linkList.append(link)
-    return(linkList)
-def crossingSign(cross,crossings):
-    #assuming a is se, b is ne, c is nw and d is sw.
-    a,b,c,d = cross
-    linkList = links(crossings)
-    bLink = [link for link in linkList if b in link][0]
+def get_components(crossings):
+        """Determines the components of a ),(
+           Returns a list of lists of (adjacently ordered) arc labels """
     
-    iLink = {i:[link for link in linkList if i in link][0] for i in cross}
-    if any([iLink[i].index(i) == len(iLink[i])-1 and iLink[cross[cross.index(i)-2]].index(cross[cross.index(i)-2]) == 0 for i in cross]):
-    #if bLink.index(b) == 0:
-        if (b-d)*(c-a)>0:
-            return -1
-        else:
-            return 1
-    else:
-        if (b-d)*(c-a)>0:
-            return 1
+        components = []
+        # hash giving both neighbouring arc labels of an arc 
+        nbrs = {}
+        for c in crossings:
+            nbrs.setdefault(c[0], []).append(c[2])
+            nbrs.setdefault(c[2], []).append(c[0])
+        for c in crossings:
+            nbrs.setdefault(c[1], []).append(c[3])
+            nbrs.setdefault(c[3], []).append(c[1])
+
+        visited = set()
+        # iterate over all arcs
+        for arc in nbrs:
+            if arc in visited:
+                continue
+            stack = [arc]
+            visited.add(arc)
+            knot = []
+            
+            # do depth-first-search on the arc to find its knot
+            while stack:
+                curr = stack.pop()
+                knot.insert(0,curr)
+                for nbr in nbrs[curr]:
+                    if nbr not in visited:
+                        visited.add(nbr)
+                        stack.append(nbr)
+            components.append(knot)
+
+        return components
+def succ(arc,crossings):
+    succs = {}
+    for comp in get_components(crossings):
+        for i in range(len(comp)):
+            succs[comp[i-1]] = comp[i]
+    return succs[arc]
+def sign(crossing,crossings):
+        if succ(crossing[3],crossings) == crossing[1]:
+            if succ(crossing[1],crossings) == crossing[3]:
+                if crossing[2] == crossing[3]:
+                    return 1
+                else:
+                    return -1
+            else:
+                return 1
+        
         else:
             return -1
 def writhe(crossings):
-    return sum([crossingSign(cross,crossings) for cross in crossings])        
+    return sum([sign(cross,crossings) for cross in crossings])        
 def arcConnect(crossings,arc):
     return [cross for cross in crossings if arc in cross]
+def relabel(originalcrossings):
+    crossings = []
+    for component in get_components(originalcrossings):
+        arcs = sorted({x for x in component})
+        mapping = {old:new+1 for new,old in enumerate(arcs)}
+        crossings.append([[mapping[x] for x in crossing] for crossing in originalcrossings])
+    return crossings
 def Jones(crossings):
-    x = simplify((-A**-3)**(writhe(crossings))* kauffman(crossings))
-    print(x)
-    return simplify(x.subs(A**-4,T))
+    k = simplify((-A**-3)**(writhe(crossings))* kauffman(crossings))
+    if len(get_components(crossings))==1:
+        return simplify(k.subs(A**-4,t))
+    else:
+        return simplify(k.subs(A**-2,t))
+def get_components(crossings):
+        """Determines the components of a ),(
+           Returns a list of lists of (adjacently ordered) arc labels """
+    
+        components = []
+        # hash giving both neighbouring arc labels of an arc 
+        nbrs = {}
+        for c in crossings:
+            nbrs.setdefault(c[0], []).append(c[2])
+            nbrs.setdefault(c[2], []).append(c[0])
+        for c in crossings:
+            nbrs.setdefault(c[1], []).append(c[3])
+            nbrs.setdefault(c[3], []).append(c[1])
+
+        visited = set()
+        # iterate over all arcs
+        for arc in nbrs:
+            if arc in visited:
+                continue
+            stack = [arc]
+            visited.add(arc)
+            knot = []
+            
+            # do depth-first-search on the arc to find its knot
+            while stack:
+                curr = stack.pop()
+                knot.insert(0,curr)
+                for nbr in nbrs[curr]:
+                    if nbr not in visited:
+                        visited.add(nbr)
+                        stack.append(nbr)
+            components.append(knot)
+
+        return components
+
+
+    
