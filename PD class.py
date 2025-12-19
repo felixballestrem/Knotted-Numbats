@@ -1,21 +1,25 @@
-class Diagram:
+class PlanarDiagram:
     def __init__(self, pd):
-        # matrix is a 2d list of segment numbers
+        """pd is a list of crossings 
+        A crossing is a list of 4 arc labels ordered anti-clockwise
+        assume orientation of 1st -> 3rd arc of crossing being incoming underpass"""
         self.pd = pd
-        self.components = self.get_components()
+        self.components = self.find_components()
         
-        self.succs = {}
-        self.arc_comps = {}
+        self._succs = {} # hash giving next arc in an oriented strand
+        self._arc_comps = {} # hash giving the component an arc belongs to
         
         for comp in self.components:
             for i in range(len(comp)):
-                self.succs[comp[i-1]] = comp[i]
-                self.arc_comps[comp[i]] = comp
+                self._succs[comp[i-1]] = comp[i]
+                self._arc_comps[comp[i]] = comp
         
     
     def get_sign(self,crossing):
+        # finds the crossing sign based on succession of arcs in overpass
         if self.get_arc_succ(crossing[3]) == crossing[1]:
             if self.get_arc_succ(crossing[1]) == crossing[3]:
+                # special 1 component knot case
                 if crossing[2] == crossing[3]:
                     return 1
                 else:
@@ -28,10 +32,12 @@ class Diagram:
 
         
     def writhe(self):
+        # sums signs of all crossings
         return sum([self.get_sign(c) for c in self.pd])
 
 
     def get_linking_number(self):
+        # sums signs of all crossings that are made up of two components
         acc = 0
         for crossing in self.pd:
             if get_arc_comp(crossing[0]) != get_arc_comp(crossing[1]):
@@ -40,19 +46,19 @@ class Diagram:
                 
                 
     def get_arc_succ(self, arc):
-        return self.succs[arc]
+        return self._succs[arc]
     
     
     def get_arc_comp(self,arc):
-        return self.arc_comps[arc]
+        return self._arc_comps[arc]
+
     
-    
-    def get_components(self):
+    def find_components(self):
         """Determines the components of a PD
-           Returns a list of lists of (adjacently ordered) arc labels """
+           gives a list of tuples of (consecutively ordered) arc labels """
     
         components = []
-        # hash giving both neighbouring arc labels of an arc 
+        # hash giving consecutive arc labels of an arc in a strand in both directions
         nbrs = {}
         for c in self.pd:
             nbrs.setdefault(c[0], []).append(c[2])
