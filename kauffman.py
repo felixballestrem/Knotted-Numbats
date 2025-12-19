@@ -9,9 +9,10 @@ def kauffman(crossings):
     cross = crossings[0]
     #initiallising each element of cross
     a,b,c,d = cross
-    # finds the index of the (other) crossing in crossings that the arc connects to. E.g. returns 0 if an arc is a loop (goes back into the same crossing).
+    #E, F, G, H store the indices of the crossings that arcs a, b, c, d connect to, respectively.
+    #If an arc forms a loop (connects back to the same crossing), the index is 0.
     connections = [0 if len(arcConnect(crossings,i)) ==1 else crossings.index(arcConnect(crossings,i)[0]) if arcConnect(crossings,i)[1] == cross else crossings.index(arcConnect(crossings,i)[1]) for i in cross]
-    E,F,G,H = connections
+    E,F,G,H = connections 
 
     testA = aSmoothing(crossings,a,b,c,d,E,F,G,H)
     testB = bSmoothing(crossings,a,b,c,d,E,F,G,H)
