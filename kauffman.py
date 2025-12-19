@@ -86,10 +86,10 @@ def bSmoothing(originalcrossings,a,b,c,d,E,F,G,H):
     crossings = [[mapping[arc] for arc in crossing] for crossing in crossings]
     return crossings      
 def arcConnect(crossings,arc):
-    # returns which crossing(s) a specific arc appears in 
+    #returns which crossing(s) a specific arc appears in 
     return [cross for cross in crossings if arc in cross]
 def jones(pd):
-    #Determines Jones polynomial from a planar diagram. Returns in terms of t.
+    #Determines Jones polynomial from a PlanarDiagram object. Returns in terms of t.
     crossings = pd.pd
     k = simplify((-A**-3)**(pd.writhe())* kauffman(crossings))
     if len(pd.components)==1: # gives t = A^-4 for knots
