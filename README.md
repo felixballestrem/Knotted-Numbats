@@ -9,7 +9,7 @@ in the kauffman.py file:
 
 from ____ import PlanarDiagram
 
-...
+... code
 
 pd = []
 
