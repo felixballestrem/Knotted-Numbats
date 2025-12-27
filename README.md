@@ -5,7 +5,7 @@ By importing the PlanarDiagram() class from the PD class.py file and storing the
 
 example usage:
 
-in the kauffman.py file:\n
+in the kauffman.py file:
 
 from ____ import PlanarDiagram
 
