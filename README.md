@@ -8,6 +8,6 @@ By importing the PlanarDiagram() class from the PD_class.py file and storing the
 
 from ____ import PlanarDiagram  
 ... code  
-pd = []  
+pd = [...]  
 jones = jones(PlanarDiagram(pd))  
 
